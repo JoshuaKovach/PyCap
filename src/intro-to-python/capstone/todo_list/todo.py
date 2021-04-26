@@ -2,9 +2,18 @@
 
 import sys
 import json
+import os
+
+from pathlib import Path
+from typing import Optional
+import typer
+
+app = typer.Typer()
+
 
 FILENAME = "TODO_LIST.txt"
-todo_list = []
+
+
 
 
 # class Task:
@@ -13,95 +22,112 @@ todo_list = []
 #         self.complete = complete
         
 
-
+#Where test code for JSON is going
 def test(dummy):
+    todo_list = []
     # foo = Task("Walk the Dog", 0)
     # bar = Task("Take the Washing Out", 0)
-    # foo = {"description": "Walk the Dog", "complete": 0}
-    # bar = {"description": "Take the Washing Out", "complete": 0}
+    foo = {"description": "Walk the Dog", "complete": 0}
+    bar = {"description": "Take the Washing Out", "complete": 0}
 
-    # todo_list.append(foo)
-    # todo_list.append(bar)
+    todo_list.append(foo)
+    todo_list.append(bar)
 
-    # with open(FILENAME,'w') as outfile:
-    #     json.dump(todo_list, outfile)
-    #     # json.dump(bar.__dict__, outfile)
-    readinfile()
-    # print(todo_list[1]["complete"])
+    
+        # json.dump(bar.__dict__, outfile)
+    
+    
     # print(data["complete"])       
 
 
-def readinfile():
-    # with open (FILENAME) as f:
-    #     data = json.load(f)
-    # todo_list = data
-    # print(todo_list[1]["complete"])
-    ###JSON ABOVE
-
+#A function to read my txt file into todo_list
+def readinfile(todo_list):
+   
     try:
         f = open(FILENAME, "r")
-        line = f.readline()
-        while line:
-            todo_list.append(line)
-            line = f.readline()
+        if os.stat(FILENAME).st_size != 0:
+            todo_list = json.load(f)
+            # with open (FILENAME) as f:
+            #     todo_list = json.load(f)
     except IOError:
         f = open(FILENAME, "a")
+        
     finally:
         f.close()
+    return todo_list
+
+
+#A function to write to todo_list
+def writetofile(todo_list):
+    with open(FILENAME,'w') as outfile:
+        json.dump(todo_list, outfile)
     
 
-def writetofile():
-    f = open(FILENAME, "w")
-    for i in todo_list:
-        f.write(i)
-    f.close()
 
-
-def create(tasks):
-    readinfile()
+#Function to add tasks to and external txt
+# @app.command()
+def create(todo_list,tasks):
+    # todo_list = []
+    # todo_list = readinfile(todo_list)
     for task in tasks:
-        todo_list.append(task + "\n")
-    writetofile()
+        todo_list.append({"description": task, "complete": 0})
+    writetofile(todo_list)
 
-
-def read():
-    readinfile()
-    for i in todo_list:
-        print(i, end="")
+#Read ToDo List
+def read(todo_list):
+    
+    for task in todo_list:
+        print(task["description"])
     
 
-
-def readsubstring(substring):
-    readinfile()
+#Read a substring from an external txt and display the substring if it exists
+def readsubstring(todo_list, substring):
+    
     found = False
     for task in todo_list:
-        if (task.find(substring) != -1):
-            print(task)
+        if (task["description"].find(substring) != -1):
+            print(task["description"])
             found = True
 
     if not found:
         print("Substring does not exist")    
         
-    
+def deleteall(todo_list):
+    open(FILENAME,'w').close()
  
-
+#Main function, runs through inputs
 def main(inputs):
+    todo_list = []
+    todo_list = readinfile(todo_list)
     if inputs[1] == "create":
-        create(inputs[2:])
+        create(todo_list, inputs[2:])
     elif inputs[1] == "list-all":
         if len(inputs) > 2:
             if inputs[2] == "--substring":
-                readsubstring(inputs[3])
+                readsubstring(todo_list, inputs[3])
             # read()
             elif inputs[2] == "--complete": 
-                readcomplete()
+                readcomplete(todo_list)
             else:
                 print("Unlucky")
         else:
-            read()
+            read(todo_list)
+    elif inputs[1] == "delete-all":
+        deleteall(todo_list)
     else:
         print("Not A Valid Input")
 
-
+#Not sure, but helps work
 if __name__ == '__main__':
     main(sys.argv)
+
+
+
+
+
+
+
+
+
+# if __name__ == "__main__":
+#     app()
